@@ -1,0 +1,4 @@
+module ClayzoEngineCore {
+  header "clayzo_engine_core.h"
+  export *
+}

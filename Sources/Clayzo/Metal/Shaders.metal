@@ -1,0 +1,346 @@
+// The Metal side of the draw-command backend. Same programs as the WebGL2
+// backend, with two deliberate differences: render targets are y-down with
+// the origin top-left (so nothing is ever flipped), and gradients are
+// evaluated from their stops here instead of through an 8-bit ramp texture.
+#include <metal_stdlib>
+using namespace metal;
+
+/* -------------------------------------------------------------------------- */
+/* Vertex                                                                      */
+/* -------------------------------------------------------------------------- */
+
+struct VertexUniforms {
+  float2x2 linear;   // local -> composition, the 2x2 part
+  float2 translate;  // local -> composition, the offset
+  float2 scale;      // composition -> device pixels
+  float4 target;     // the device-pixel region this render target covers: origin, size
+};
+
+struct Varyings {
+  float4 position [[position]];
+  float2 local;
+};
+
+vertex Varyings shapeVertex(uint id [[vertex_id]],
+                            device const float2 *positions [[buffer(0)]],
+                            constant VertexUniforms &u [[buffer(1)]]) {
+  Varyings out;
+  float2 local = positions[id];
+  float2 world = u.linear * local + u.translate;
+  float2 pixel = world * u.scale - u.target.xy;
+  float2 unit = pixel / u.target.zw;
+  out.position = float4(unit.x * 2.0 - 1.0, 1.0 - unit.y * 2.0, 0.0, 1.0);
+  out.local = local;
+  return out;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Paint                                                                       */
+/* -------------------------------------------------------------------------- */
+
+#define MAX_STOPS 16
+
+struct Paint {
+  float4 color;
+  float4 box;        // centre.xy, halfSize.xy
+  float4 gradient;   // start.xy, end.xy
+  float radius;
+  float stroke;      // 0 fills; > 0 strokes a band of this width
+  int shape;         // 0 rounded rect, 1 ellipse
+  int paint;         // 0 solid, 1 linear gradient, 2 radial gradient
+  float opacity;     // a folded layer's alpha, multiplied in instead of composited
+  int stopCount;
+  float2 pad;
+  float4 stopColor[MAX_STOPS];
+  float4 stopOffset[MAX_STOPS / 4];
+};
+
+static float stopOffsetAt(constant Paint &p, int index) {
+  return p.stopOffset[index / 4][index % 4];
+}
+
+/// Unpremultiplied colour at `t`, interpolated between the bracketing stops —
+/// the same rule the ramp texture encoded, minus the quantisation.
+static float4 rampColor(constant Paint &p, float t) {
+  int count = p.stopCount;
+  if (count <= 0) return p.color;
+  int lower = 0, upper = count - 1;
+  for (int i = 0; i + 1 < count; i += 1) {
+    if (t >= stopOffsetAt(p, i) && t <= stopOffsetAt(p, i + 1)) { lower = i; upper = i + 1; break; }
+  }
+  float span = max(1e-6, stopOffsetAt(p, upper) - stopOffsetAt(p, lower));
+  float local = clamp((t - stopOffsetAt(p, lower)) / span, 0.0, 1.0);
+  return mix(p.stopColor[lower], p.stopColor[upper], local);
+}
+
+static float4 paintColor(constant Paint &p, float2 local) {
+  if (p.paint == 0) return p.color;
+  float2 from = p.gradient.xy;
+  float2 to = p.gradient.zw;
+  float t = p.paint == 2
+    ? clamp(length(local - from) / max(length(to - from), 1e-6), 0.0, 1.0)
+    : clamp(dot(local - from, to - from) / max(dot(to - from, to - from), 1e-6), 0.0, 1.0);
+  return rampColor(p, t);
+}
+
+static float roundedRectDistance(float2 point, float2 half_, float radius) {
+  float2 q = abs(point) - half_ + radius;
+  return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius;
+}
+
+/// Analytic coverage for the primitives whose distance function is closed-form.
+fragment float4 shapeFragment(Varyings in [[stage_in]], constant Paint &p [[buffer(0)]]) {
+  float2 point = in.local - p.box.xy;
+  float dist = p.shape == 1
+    ? (length(point / max(p.box.zw, float2(1e-6))) - 1.0) * min(p.box.z, p.box.w)
+    : roundedRectDistance(point, p.box.zw, p.radius);
+  // A stroke is the same field read as a band around zero.
+  if (p.stroke > 0.0) dist = abs(dist) - p.stroke * 0.5;
+  float width = fwidth(dist);
+  float coverage = 1.0 - smoothstep(-width * 0.5, width * 0.5, dist);
+  if (coverage <= 0.0) discard_fragment();
+  float4 color = paintColor(p, in.local);
+  return float4(color.rgb * color.a, color.a) * coverage * p.opacity;
+}
+
+/// The analytic shape as a clip. A clip lives in the stencil, which has no
+/// coverage — so the shape's coverage is spent on the sample mask instead:
+/// a pixel three-quarters inside the shape sets three of its four samples,
+/// and the multisample resolve turns that back into a soft edge. The WebGL
+/// backend sets every sample of any touched pixel, which reads as a jagged
+/// edge next to Skia's antialiased clipPath.
+struct MaskedFragment {
+  float4 color [[color(0)]];
+  uint mask [[sample_mask]];
+};
+
+fragment MaskedFragment shapeMaskFragment(Varyings in [[stage_in]], constant Paint &p [[buffer(0)]]) {
+  float2 point = in.local - p.box.xy;
+  float dist = p.shape == 1
+    ? (length(point / max(p.box.zw, float2(1e-6))) - 1.0) * min(p.box.z, p.box.w)
+    : roundedRectDistance(point, p.box.zw, p.radius);
+  float width = fwidth(dist);
+  float coverage = 1.0 - smoothstep(-width * 0.5, width * 0.5, dist);
+  if (coverage <= 0.0) discard_fragment();
+  uint samples = uint(clamp(coverage * 4.0 + 0.5, 0.0, 4.0));
+  MaskedFragment out;
+  out.color = float4(0.0);
+  out.mask = (1u << samples) - 1u;
+  return out;
+}
+
+/// Flat or gradient colour, used for stencil fans and cover quads.
+fragment float4 solidFragment(Varyings in [[stage_in]], constant Paint &p [[buffer(0)]]) {
+  float4 color = paintColor(p, in.local);
+  return float4(color.rgb * color.a, color.a) * p.opacity;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Images                                                                      */
+/* -------------------------------------------------------------------------- */
+
+struct ImageUniforms {
+  float4 source;  // crop rect in normalised image coordinates
+  float4 box;     // x, y, width, height in local space
+  float alpha;
+};
+
+constexpr sampler linearClamp(filter::linear, address::clamp_to_edge, mip_filter::none);
+
+fragment float4 textureFragment(Varyings in [[stage_in]],
+                                constant ImageUniforms &u [[buffer(0)]],
+                                texture2d<float> image [[texture(0)]]) {
+  float2 unit = (in.local - u.box.xy) / max(u.box.zw, float2(1e-6));
+  if (unit.x < 0.0 || unit.x > 1.0 || unit.y < 0.0 || unit.y > 1.0) discard_fragment();
+  float4 texel = image.sample(linearClamp, u.source.xy + unit * u.source.zw);
+  // Images are uploaded premultiplied.
+  return texel * u.alpha;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sampled regions                                                             */
+/* -------------------------------------------------------------------------- */
+
+/// Where a sampled render target sits: the device-pixel region it covers,
+/// and the size of the texture holding it (a pooled texture is larger than
+/// the region, which occupies its top-left corner).
+struct Source {
+  float4 rect;      // device pixels: origin, size
+  float2 texSize;   // texels
+  float2 scale;     // composition -> device
+};
+
+static float2 sourceUv(constant Source &s, float2 local) {
+  float2 pixel = local * s.scale;
+  return (pixel - s.rect.xy) / s.texSize;
+}
+
+static bool insideSource(constant Source &s, float2 uv) {
+  float2 limit = s.rect.zw / s.texSize;
+  return uv.x >= 0.0 && uv.y >= 0.0 && uv.x <= limit.x && uv.y <= limit.y;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Layer composite                                                             */
+/* -------------------------------------------------------------------------- */
+
+struct LayerUniforms {
+  Source layer;
+  float alpha;
+  int blend;
+};
+
+/* The W3C compositing separable modes, indices matching the core's table. */
+static float dodge(float s, float d) {
+  if (d <= 0.0) return 0.0;
+  if (s >= 1.0) return 1.0;
+  return min(1.0, d / (1.0 - s));
+}
+static float burn(float s, float d) {
+  if (d >= 1.0) return 1.0;
+  if (s <= 0.0) return 0.0;
+  return 1.0 - min(1.0, (1.0 - d) / s);
+}
+static float softLight(float s, float d) {
+  if (s <= 0.5) return d - (1.0 - 2.0 * s) * d * (1.0 - d);
+  float dd = d <= 0.25 ? ((16.0 * d - 12.0) * d + 4.0) * d : sqrt(d);
+  return d + (2.0 * s - 1.0) * (dd - d);
+}
+static float luminance(float3 c) { return dot(c, float3(0.3, 0.59, 0.11)); }
+static float3 clipColor(float3 c) {
+  float l = luminance(c);
+  float low = min(c.r, min(c.g, c.b));
+  float high = max(c.r, max(c.g, c.b));
+  if (low < 0.0) c = l + (c - l) * l / max(l - low, 1e-6);
+  if (high > 1.0) c = l + (c - l) * (1.0 - l) / max(high - l, 1e-6);
+  return c;
+}
+static float3 setLuminance(float3 c, float l) { return clipColor(c + (l - luminance(c))); }
+static float saturation(float3 c) { return max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b)); }
+static float3 setSaturation(float3 c, float s) {
+  float low = min(c.r, min(c.g, c.b));
+  float high = max(c.r, max(c.g, c.b));
+  return high > low ? (c - low) * s / (high - low) : float3(0.0);
+}
+
+static float3 blendChannel(float3 src, float3 dst, int mode) {
+  if (mode == 1) return src * dst;
+  if (mode == 2) return src + dst - src * dst;
+  if (mode == 3) return mix(2.0 * src * dst, 1.0 - 2.0 * (1.0 - src) * (1.0 - dst), step(float3(0.5), dst));
+  if (mode == 4) return min(src, dst);
+  if (mode == 5) return max(src, dst);
+  if (mode == 6) return abs(src - dst);
+  if (mode == 8) return float3(dodge(src.r, dst.r), dodge(src.g, dst.g), dodge(src.b, dst.b));
+  if (mode == 9) return float3(burn(src.r, dst.r), burn(src.g, dst.g), burn(src.b, dst.b));
+  if (mode == 10) return mix(2.0 * src * dst, 1.0 - 2.0 * (1.0 - src) * (1.0 - dst), step(float3(0.5), src));
+  if (mode == 11) return float3(softLight(src.r, dst.r), softLight(src.g, dst.g), softLight(src.b, dst.b));
+  if (mode == 12) return src + dst - 2.0 * src * dst;
+  if (mode == 13) return setLuminance(setSaturation(src, saturation(dst)), luminance(dst));
+  if (mode == 14) return setLuminance(setSaturation(dst, saturation(src)), luminance(dst));
+  if (mode == 15) return setLuminance(src, luminance(dst));
+  if (mode == 16) return setLuminance(dst, luminance(src));
+  return src;
+}
+
+static float4 layerSample(constant LayerUniforms &u, texture2d<float> layer, float2 local) {
+  float2 uv = sourceUv(u.layer, local);
+  // A layer fitted to its bounds is empty everywhere outside them; a matte
+  // composited over a larger content layer relies on reading that emptiness.
+  return insideSource(u.layer, uv) ? layer.sample(linearClamp, uv) * u.alpha : float4(0.0);
+}
+
+/// Composites a finished layer; the blend unit handles source-over and add.
+fragment float4 layerFragment(Varyings in [[stage_in]],
+                              constant LayerUniforms &u [[buffer(0)]],
+                              texture2d<float> layer [[texture(0)]]) {
+  return layerSample(u, layer, in.local);
+}
+
+/// Composites with a separable or non-separable blend mode, reading the
+/// destination through the tile — Apple GPUs keep the framebuffer on chip,
+/// so this costs nothing and needs no snapshot.
+fragment float4 layerBlendFragment(Varyings in [[stage_in]],
+                                   constant LayerUniforms &u [[buffer(0)]],
+                                   texture2d<float> layer [[texture(0)]],
+                                   float4 dst [[color(0)]]) {
+  float4 src = layerSample(u, layer, in.local);
+  float3 srcColor = src.a > 0.0 ? src.rgb / src.a : float3(0.0);
+  float3 dstColor = dst.a > 0.0 ? dst.rgb / dst.a : float3(0.0);
+  float3 blended = blendChannel(srcColor, dstColor, u.blend);
+  float outAlpha = src.a + dst.a * (1.0 - src.a);
+  float3 premultiplied = mix(srcColor, blended, dst.a) * src.a + dstColor * dst.a * (1.0 - src.a);
+  return float4(premultiplied, outAlpha);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Filters                                                                     */
+/* -------------------------------------------------------------------------- */
+
+struct BoxUniforms {
+  Source src;
+  float2 direction;  // (1,0) or (0,1), in texels
+  int window;
+  int offset;
+};
+
+/// One box pass of Skia's blur: three successive boxes approximate the
+/// Gaussian, and matching the approximation rather than the ideal is the
+/// point — see the WebGL backend for the reasoning.
+fragment float4 boxFragment(Varyings in [[stage_in]],
+                            constant BoxUniforms &u [[buffer(0)]],
+                            texture2d<float> src [[texture(0)]]) {
+  float2 uv = sourceUv(u.src, in.local);
+  if (u.window <= 1) return src.sample(linearClamp, uv);
+  float2 texel = 1.0 / u.src.texSize;
+  float4 sum = float4(0.0);
+  for (int i = 0; i < u.window; i += 1) {
+    sum += src.sample(linearClamp, uv + u.direction * float(i - u.offset) * texel);
+  }
+  return sum / float(u.window);
+}
+
+struct ColorMatrixUniforms {
+  Source src;
+  float4 m[5];  // Skia's 20 terms, row-major
+};
+
+/// Skia's colour matrix, which operates on unpremultiplied RGBA.
+fragment float4 colorMatrixFragment(Varyings in [[stage_in]],
+                                    constant ColorMatrixUniforms &u [[buffer(0)]],
+                                    texture2d<float> src [[texture(0)]]) {
+  float4 s = src.sample(linearClamp, sourceUv(u.src, in.local));
+  float3 color = s.a > 0.0 ? s.rgb / s.a : float3(0.0);
+  float4 v = float4(color, s.a);
+  // m[0..4] are the 20 terms in row-major order: five per output channel.
+  float r = u.m[0].x * v.r + u.m[0].y * v.g + u.m[0].z * v.b + u.m[0].w * v.a + u.m[1].x;
+  float g = u.m[1].y * v.r + u.m[1].z * v.g + u.m[1].w * v.b + u.m[2].x * v.a + u.m[2].y;
+  float b = u.m[2].z * v.r + u.m[2].w * v.g + u.m[3].x * v.b + u.m[3].y * v.a + u.m[3].z;
+  float a = u.m[3].w * v.r + u.m[4].x * v.g + u.m[4].y * v.b + u.m[4].z * v.a + u.m[4].w;
+  a = clamp(a, 0.0, 1.0);
+  return float4(clamp(float3(r, g, b), 0.0, 1.0) * a, a);
+}
+
+struct TintUniforms {
+  Source src;
+  float4 tint;
+  float2 offset;  // composition units
+};
+
+/// Tints a blurred silhouette for drop shadows.
+fragment float4 tintFragment(Varyings in [[stage_in]],
+                             constant TintUniforms &u [[buffer(0)]],
+                             texture2d<float> src [[texture(0)]]) {
+  float2 uv = sourceUv(u.src, in.local - u.offset);
+  float alpha = insideSource(u.src, uv) ? src.sample(linearClamp, uv).a * u.tint.a : 0.0;
+  return float4(u.tint.rgb * alpha, alpha);
+}
+
+struct CopyUniforms {
+  Source src;
+};
+
+fragment float4 copyFragment(Varyings in [[stage_in]],
+                             constant CopyUniforms &u [[buffer(0)]],
+                             texture2d<float> src [[texture(0)]]) {
+  return src.sample(linearClamp, sourceUv(u.src, in.local));
+}

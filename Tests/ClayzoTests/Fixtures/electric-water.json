@@ -1,0 +1,2230 @@
+{
+  "version": 2,
+  "id": "water-creature",
+  "revision": "sha256:0291f2af2a8049bd693aa80651868d0fa500fb1d82b80d3572abd2d93237de5a",
+  "name": "Sparky, a creature made of water",
+  "canvas": {
+    "width": 720,
+    "height": 720,
+    "pixelAspectRatio": 1,
+    "backgroundColor": {
+      "r": 0.025,
+      "g": 0.045,
+      "b": 0.085,
+      "a": 1
+    }
+  },
+  "timing": {
+    "ticksPerSecond": 240,
+    "frameRate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "durationTicks": 1920,
+    "displayStartTick": 0
+  },
+  "assets": {},
+  "compositions": {
+    "main": {
+      "id": "main",
+      "name": "Main",
+      "width": 720,
+      "height": 720,
+      "durationTicks": 1920,
+      "nodes": {
+        "backdrop": {
+          "id": "backdrop",
+          "name": "Backdrop",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 360,
+                "y": 360,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "rect",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 720,
+              "height": 720
+            }
+          },
+          "cornerRadius": {
+            "kind": "constant",
+            "value": 0
+          },
+          "style": {
+            "gradientFill": {
+              "kind": "radial",
+              "stops": {
+                "kind": "constant",
+                "value": [
+                  {
+                    "position": 0,
+                    "color": {
+                      "r": 0.075,
+                      "g": 0.15,
+                      "b": 0.26,
+                      "a": 1
+                    }
+                  },
+                  {
+                    "position": 0.5,
+                    "color": {
+                      "r": 0.035,
+                      "g": 0.065,
+                      "b": 0.13,
+                      "a": 1
+                    }
+                  },
+                  {
+                    "position": 1,
+                    "color": {
+                      "r": 0.025,
+                      "g": 0.045,
+                      "b": 0.085,
+                      "a": 1
+                    }
+                  }
+                ]
+              },
+              "start": {
+                "kind": "constant",
+                "value": {
+                  "x": 0,
+                  "y": 10
+                }
+              },
+              "end": {
+                "kind": "constant",
+                "value": {
+                  "x": 0,
+                  "y": 470
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "puddle": {
+          "id": "puddle",
+          "name": "Puddle",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 360,
+                "y": 558,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "keyframed",
+              "keyframes": [
+                {
+                  "id": "puddle-scale-0",
+                  "tick": 0,
+                  "value": {
+                    "x": 1,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-1",
+                  "tick": 80,
+                  "value": {
+                    "x": 0.975,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-2",
+                  "tick": 160,
+                  "value": {
+                    "x": 0.9566987298107781,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-3",
+                  "tick": 240,
+                  "value": {
+                    "x": 0.95,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-4",
+                  "tick": 320,
+                  "value": {
+                    "x": 0.9566987298107781,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-5",
+                  "tick": 400,
+                  "value": {
+                    "x": 0.975,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-6",
+                  "tick": 480,
+                  "value": {
+                    "x": 1,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-7",
+                  "tick": 560,
+                  "value": {
+                    "x": 1.025,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-8",
+                  "tick": 640,
+                  "value": {
+                    "x": 1.043301270189222,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-9",
+                  "tick": 720,
+                  "value": {
+                    "x": 1.05,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-10",
+                  "tick": 800,
+                  "value": {
+                    "x": 1.043301270189222,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-11",
+                  "tick": 880,
+                  "value": {
+                    "x": 1.025,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-12",
+                  "tick": 960,
+                  "value": {
+                    "x": 1,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-13",
+                  "tick": 1040,
+                  "value": {
+                    "x": 0.9750000000000001,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-14",
+                  "tick": 1120,
+                  "value": {
+                    "x": 0.9566987298107781,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-15",
+                  "tick": 1200,
+                  "value": {
+                    "x": 0.95,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-16",
+                  "tick": 1280,
+                  "value": {
+                    "x": 0.9566987298107781,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-17",
+                  "tick": 1360,
+                  "value": {
+                    "x": 0.975,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-18",
+                  "tick": 1440,
+                  "value": {
+                    "x": 1,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-19",
+                  "tick": 1520,
+                  "value": {
+                    "x": 1.025,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-20",
+                  "tick": 1600,
+                  "value": {
+                    "x": 1.043301270189222,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-21",
+                  "tick": 1680,
+                  "value": {
+                    "x": 1.05,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-22",
+                  "tick": 1760,
+                  "value": {
+                    "x": 1.043301270189222,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-23",
+                  "tick": 1840,
+                  "value": {
+                    "x": 1.025,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "linear"
+                },
+                {
+                  "id": "puddle-scale-24",
+                  "tick": 1920,
+                  "value": {
+                    "x": 1,
+                    "y": 0.125,
+                    "z": 1
+                  },
+                  "interpolation": "hold"
+                }
+              ]
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "rect",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 520,
+              "height": 520
+            }
+          },
+          "cornerRadius": {
+            "kind": "constant",
+            "value": 0
+          },
+          "style": {
+            "gradientFill": {
+              "kind": "radial",
+              "stops": {
+                "kind": "constant",
+                "value": [
+                  {
+                    "position": 0,
+                    "color": {
+                      "r": 0.42,
+                      "g": 0.86,
+                      "b": 1,
+                      "a": 0.46
+                    }
+                  },
+                  {
+                    "position": 0.35,
+                    "color": {
+                      "r": 0.24,
+                      "g": 0.62,
+                      "b": 0.88,
+                      "a": 0.2
+                    }
+                  },
+                  {
+                    "position": 1,
+                    "color": {
+                      "r": 0.1,
+                      "g": 0.35,
+                      "b": 0.6,
+                      "a": 0
+                    }
+                  }
+                ]
+              },
+              "start": {
+                "kind": "constant",
+                "value": {
+                  "x": 0,
+                  "y": 0
+                }
+              },
+              "end": {
+                "kind": "constant",
+                "value": {
+                  "x": 0,
+                  "y": 250
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "body": {
+          "id": "body",
+          "name": "Body",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 360,
+                "y": 366,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 336,
+              "height": 336
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.45,
+                  "g": 0.87,
+                  "b": 0.98,
+                  "a": 1
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "water": {
+          "id": "water",
+          "name": "Water",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "effect",
+          "inputId": "body",
+          "effect": "custom-sksl",
+          "implementation": "\nuniform shader inputImage;\nuniform float2 pixelScale; // authored {1,1}; a point, so it arrives as the device scale\nuniform float phase;\nuniform float2 centre;\nuniform float radius;\nuniform float agitation;\nuniform float2 lean;\nuniform float2 charge;\nuniform float4 deepColor;\nuniform float4 skinColor;\nuniform float4 sparkColor;\nuniform float wobble;\n\nfloat hash21(float2 p) {\n  p = fract(p * float2(123.34, 456.21));\n  p += dot(p, p + 45.32);\n  return fract(p.x * p.y);\n}\n\nfloat valueNoise(float2 p) {\n  float2 cell = floor(p);\n  float2 f = fract(p);\n  float2 w = f * f * (3.0 - 2.0 * f);\n  float a = hash21(cell);\n  float b = hash21(cell + float2(1.0, 0.0));\n  float c = hash21(cell + float2(0.0, 1.0));\n  float d = hash21(cell + float2(1.0, 1.0));\n  return mix(mix(a, b, w.x), mix(c, d, w.x), w.y);\n}\n\n// Three octaves is enough for water and keeps the CPU interpreter honest.\nfloat fbm(float2 p) {\n  float total = 0.0;\n  float amplitude = 0.5;\n  for (int i = 0; i < 3; i++) {\n    total += amplitude * valueNoise(p);\n    p = p * 2.07 + float2(19.3, 7.7);\n    amplitude *= 0.5;\n  }\n  return total;\n}\n\nhalf4 main(float2 device) {\n  // Everything below is in composition units. `device`, `centre`, `lean` and\n  // `charge` arrive in device pixels; dividing them by the device scale is\n  // what keeps the arcs and glow the same size relative to the body at any\n  // render size, instead of shrinking into it as the scale grows.\n  float scale = max(pixelScale.x, 0.0001);\n  float2 p = device / scale - lean / scale;\n  float2 centreC = centre / scale;\n  float2 chargeC = charge / scale;\n  float2 rel = p - centreC;\n  float len = length(rel);\n  float2 dir = len > 0.001 ? rel / len : float2(0.0, -1.0);\n  float angle = atan(rel.y, rel.x);\n\n  // --- 1. Surface tension -------------------------------------------------\n  // The mask is a circle. Everything blobby about the silhouette is this:\n  // sampling the mask at a radially displaced point pushes the edge in and out.\n  float gain = wobble * (1.0 + 0.85 * agitation);\n  float lobes =\n      sin(3.0 * angle + 1.0 * phase) * 0.58\n    + sin(5.0 * angle - 2.0 * phase) * 0.26\n    + sin(2.0 * angle + 3.0 * phase) * 0.24;\n  float breath = sin(2.0 * phase) * 0.34 + sin(3.0 * phase + 1.1) * 0.18;\n  float2 slosh = float2(sin(phase) * 0.12, cos(2.0 * phase) * 0.09) * gain;\n  float2 sampleP = p - dir * (lobes + breath) * gain - slosh;\n  half4 source = inputImage.eval(sampleP * scale + lean);\n  float bodyAlpha = float(source.a);\n\n  // Material space: measured from the mask centre at the point actually shown,\n  // so the silhouette sits at exactly m = 1 whatever the wobble is doing.\n  float2 relM = sampleP - centreC;\n  float m = length(relM) / max(radius, 1.0);\n  float2 q = relM / max(radius, 1.0);\n\n  // --- 2. Caustics --------------------------------------------------------\n  // Two advected noise fields, the second warped by the first, then ridged.\n  // The advection travels a closed circle in phase, so it never seams.\n  float2 drift = float2(cos(phase), sin(phase));\n  float base1 = fbm(q * 3.1 + drift * 0.85);\n  float base2 = fbm(q * 6.3 - drift * 0.55 + base1 * 1.4 + float2(sin(2.0 * phase) * 0.4, 0.0));\n  float ridged = 1.0 - abs(base2 * 2.0 - 1.0);\n  float caustic = pow(clamp(ridged, 0.0, 1.0), 4.0);\n  // Light pools low in a droplet rather than spreading evenly.\n  float pool = smoothstep(-0.9, 0.75, q.y) * 0.7 + 0.35;\n\n  // --- 3. Body ------------------------------------------------------------\n  float depth = clamp(1.0 - m, 0.0, 1.0);\n  float3 body = mix(deepColor.rgb, skinColor.rgb, smoothstep(0.0, 0.80, depth * depth));\n  float key = clamp(dot(normalize(relM + float2(0.001)), float2(-0.55, -0.83)), 0.0, 1.0);\n  body += skinColor.rgb * pow(key, 2.0) * 0.34 * depth;\n  body += sparkColor.rgb * caustic * pool * (0.36 + 0.50 * agitation);\n  // The meniscus: a thin bright band right at the surface, not a wide fade.\n  float meniscus = smoothstep(0.80, 0.99, m) * (1.0 - smoothstep(0.99, 1.06, m));\n  body += sparkColor.rgb * meniscus * 0.70;\n  // A little of the sky picked up along the top edge.\n  body += skinColor.rgb * smoothstep(0.55, 1.0, m) * clamp(-q.y, 0.0, 1.0) * 0.28;\n\n  // --- 4. Electricity -----------------------------------------------------\n  // A filament is the zero crossing of a drifting noise field: thin, branching,\n  // and it moves without any of it ever being drawn twice. A bright core plus a\n  // wide soft bloom is what separates lightning from a scratch.\n  float2 charged = chargeC - centreC;\n  float2 chargeDir = length(charged) > 0.001 ? normalize(charged) : float2(0.0, -1.0);\n  float facing = clamp(dot(dir, chargeDir) * 0.5 + 0.5, 0.0, 1.0);\n\n  float field = fbm(q * 2.8 + float2(cos(2.0 * phase), sin(2.0 * phase)) * 1.25);\n  float branchField = fbm(q * 5.4 - float2(sin(3.0 * phase), cos(3.0 * phase)) * 0.85 + 11.0);\n  float coreWidth = 0.011 + 0.007 * agitation;\n  float d1 = abs(field - 0.5);\n  float core = 1.0 - smoothstep(0.0, coreWidth, d1);\n  float bloom = 1.0 - smoothstep(0.0, coreWidth * 9.0, d1);\n  float branch = 1.0 - smoothstep(0.0, coreWidth * 0.85, abs(branchField - 0.5));\n\n  // Arcs run across the body but crowd the surface, and leap a little past it.\n  float shell = (0.30 + 0.70 * smoothstep(0.12, 0.88, m)) * (1.0 - smoothstep(0.99, 1.22, m));\n  float flicker = 0.50 + 0.50 * sin(7.0 * phase + field * 14.0);\n  // Presence decides *whether* a filament is lit, not how grey it is. Dimming\n  // the core is what turns lightning into a smudge, so gate instead: below the\n  // threshold there is nothing, above it the core is fully bright.\n  float presence = shell * (0.52 + 0.80 * facing) * flicker * (0.62 + 1.05 * agitation);\n  float visible = smoothstep(0.16, 0.44, presence);\n  float bright = clamp(core + branch * 0.80, 0.0, 1.0) * visible;\n  float halo = clamp(bloom * bloom * visible * 0.30, 0.0, 1.0);\n  float3 arcColor = mix(sparkColor.rgb, float3(1.0), 0.6);\n  float arcAlpha = clamp(bright + halo, 0.0, 1.0);\n  float3 arcPremul = arcColor * bright + sparkColor.rgb * halo;\n\n  // --- 5. Glow ------------------------------------------------------------\n  float glow = (1.0 - smoothstep(0.98, 1.70, m)) * (0.11 + 0.24 * agitation);\n  float glowAlpha = glow * clamp(1.0 - bodyAlpha, 0.0, 1.0);\n\n  // --- 6. Composite (premultiplied) --------------------------------------\n  float alpha = clamp(bodyAlpha + glowAlpha + arcAlpha, 0.0, 1.0);\n  float3 premul = body * bodyAlpha + skinColor.rgb * glowAlpha * 0.9 + arcPremul;\n  return half4(half3(clamp(premul, 0.0, alpha)), half(alpha));\n}\n",
+          "parameters": [
+            {
+              "id": "pixelScale",
+              "name": "pixelScale",
+              "valueType": "point",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "x": 1,
+                  "y": 1
+                }
+              },
+              "minimum": {
+                "x": 0.05,
+                "y": 0.05
+              },
+              "maximum": {
+                "x": 8,
+                "y": 8
+              }
+            },
+            {
+              "id": "phase",
+              "name": "phase",
+              "valueType": "number",
+              "value": {
+                "kind": "keyframed",
+                "keyframes": [
+                  {
+                    "id": "phase-0",
+                    "tick": 0,
+                    "value": 0,
+                    "interpolation": "linear"
+                  },
+                  {
+                    "id": "phase-1",
+                    "tick": 1920,
+                    "value": 6.283185307179586,
+                    "interpolation": "hold"
+                  }
+                ]
+              },
+              "minimum": 0,
+              "maximum": 6.283185307179586
+            },
+            {
+              "id": "centre",
+              "name": "centre",
+              "valueType": "point",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "x": 360,
+                  "y": 366
+                }
+              },
+              "minimum": {
+                "x": -4000,
+                "y": -4000
+              },
+              "maximum": {
+                "x": 4000,
+                "y": 4000
+              }
+            },
+            {
+              "id": "radius",
+              "name": "radius",
+              "valueType": "number",
+              "value": {
+                "kind": "constant",
+                "value": 168
+              },
+              "minimum": 1,
+              "maximum": 2000
+            },
+            {
+              "id": "agitation",
+              "name": "agitation",
+              "valueType": "number",
+              "value": {
+                "kind": "constant",
+                "value": 0.3
+              },
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "id": "lean",
+              "name": "lean",
+              "valueType": "point",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "x": 0,
+                  "y": 0
+                }
+              },
+              "minimum": {
+                "x": -4000,
+                "y": -4000
+              },
+              "maximum": {
+                "x": 4000,
+                "y": 4000
+              }
+            },
+            {
+              "id": "charge",
+              "name": "charge",
+              "valueType": "point",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "x": 360,
+                  "y": 130.8
+                }
+              },
+              "minimum": {
+                "x": -4000,
+                "y": -4000
+              },
+              "maximum": {
+                "x": 4000,
+                "y": 4000
+              }
+            },
+            {
+              "id": "deepColor",
+              "name": "deepColor",
+              "valueType": "color",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.08,
+                  "g": 0.34,
+                  "b": 0.62,
+                  "a": 1
+                }
+              }
+            },
+            {
+              "id": "skinColor",
+              "name": "skinColor",
+              "valueType": "color",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.45,
+                  "g": 0.87,
+                  "b": 0.98,
+                  "a": 1
+                }
+              }
+            },
+            {
+              "id": "sparkColor",
+              "name": "sparkColor",
+              "valueType": "color",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.74,
+                  "g": 0.96,
+                  "b": 1,
+                  "a": 1
+                }
+              }
+            },
+            {
+              "id": "wobble",
+              "name": "wobble",
+              "valueType": "number",
+              "value": {
+                "kind": "constant",
+                "value": 10
+              },
+              "minimum": 0,
+              "maximum": 60
+            }
+          ],
+          "capability": {
+            "requires": [
+              "runtime-effect",
+              "offscreen-surface"
+            ],
+            "fallback": "passthrough",
+            "maxTemporarySurfaces": 1
+          }
+        },
+        "face": {
+          "id": "face",
+          "name": "Face",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 360,
+                "y": 366,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "group",
+          "children": [
+            "eye-left",
+            "eye-right",
+            "pupil-left",
+            "pupil-right",
+            "glint-left",
+            "glint-right",
+            "smile"
+          ],
+          "isolation": false
+        },
+        "eye-left": {
+          "id": "eye-left",
+          "name": "Eye eye-left",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": -48,
+                "y": -20,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 66,
+              "height": 70
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.96,
+                  "g": 0.995,
+                  "b": 1,
+                  "a": 0.98
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "eye-right": {
+          "id": "eye-right",
+          "name": "Eye eye-right",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 48,
+                "y": -20,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 66,
+              "height": 70
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.96,
+                  "g": 0.995,
+                  "b": 1,
+                  "a": 0.98
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "pupil-left": {
+          "id": "pupil-left",
+          "name": "Pupil pupil-left",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": -48,
+                "y": -17,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 34,
+              "height": 37
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.04,
+                  "g": 0.1,
+                  "b": 0.18,
+                  "a": 1
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "pupil-right": {
+          "id": "pupil-right",
+          "name": "Pupil pupil-right",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 48,
+                "y": -17,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 34,
+              "height": 37
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.04,
+                  "g": 0.1,
+                  "b": 0.18,
+                  "a": 1
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "glint-left": {
+          "id": "glint-left",
+          "name": "Glint glint-left",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": -57,
+                "y": -27,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 13,
+              "height": 13
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 1,
+                  "g": 1,
+                  "b": 1,
+                  "a": 0.92
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "glint-right": {
+          "id": "glint-right",
+          "name": "Glint glint-right",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 39,
+                "y": -27,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 13,
+              "height": 13
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 1,
+                  "g": 1,
+                  "b": 1,
+                  "a": 0.92
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "smile": {
+          "id": "smile",
+          "name": "Smile",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 1920,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "path",
+          "path": {
+            "kind": "constant",
+            "value": {
+              "contours": [
+                {
+                  "closed": false,
+                  "vertices": [
+                    {
+                      "point": {
+                        "x": -31,
+                        "y": 40
+                      },
+                      "inTangent": {
+                        "x": 0,
+                        "y": 0
+                      },
+                      "outTangent": {
+                        "x": 20.666666666666664,
+                        "y": 18.666666666666664
+                      }
+                    },
+                    {
+                      "point": {
+                        "x": 31,
+                        "y": 40
+                      },
+                      "inTangent": {
+                        "x": -20.666666666666664,
+                        "y": 18.666666666666664
+                      },
+                      "outTangent": {
+                        "x": 0,
+                        "y": 0
+                      }
+                    }
+                  ]
+                }
+              ],
+              "fillRule": "nonzero",
+              "svgSource": {
+                "pathData": "M -31 40 Q 0 68 31 40"
+              }
+            }
+          },
+          "style": {
+            "stroke": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.05,
+                  "g": 0.14,
+                  "b": 0.25,
+                  "a": 0.85
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              },
+              "width": {
+                "kind": "constant",
+                "value": 10
+              },
+              "lineCap": "round",
+              "lineJoin": "round",
+              "miterLimit": 4
+            }
+          }
+        }
+      },
+      "rootNodeIds": [
+        "backdrop",
+        "puddle",
+        "water",
+        "face"
+      ]
+    }
+  },
+  "rootCompositionId": "main",
+  "components": {},
+  "markers": [],
+  "interaction": {
+    "version": 1,
+    "inputs": [
+      {
+        "id": "input-charge",
+        "name": "charge",
+        "kind": "number",
+        "defaultValue": 0,
+        "minimum": 0,
+        "maximum": 1,
+        "label": "Charge",
+        "description": "Forces the creature sparky regardless of where the pointer is."
+      },
+      {
+        "id": "input-pixel-scale",
+        "name": "pixelScale",
+        "kind": "number",
+        "defaultValue": 1,
+        "minimum": 0.05,
+        "maximum": 8,
+        "label": "Pixel scale",
+        "description": "Device pixels per composition unit. custom-sksl shades in device pixels and receives its parameters unscaled, so the host has to tell the shader what resolution it is drawing at."
+      }
+    ],
+    "hitAreas": [
+      {
+        "id": "creature",
+        "nodeId": "face",
+        "shape": "circle",
+        "radius": 188,
+        "cursor": "pointer"
+      }
+    ],
+    "pointer": {
+      "captureOutside": true,
+      "restOnLeave": true
+    },
+    "bindings": [
+      {
+        "id": "pixel-scale",
+        "name": "Render scale reaches the shader",
+        "target": {
+          "kind": "effect-parameter",
+          "nodeId": "water",
+          "parameterId": "pixelScale"
+        },
+        "blend": "set",
+        "steps": [
+          {
+            "id": "scale",
+            "op": "input",
+            "input": "pixelScale"
+          }
+        ]
+      },
+      {
+        "id": "face.look-at",
+        "name": "face turns toward the cursor",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "face",
+          "property": "rotation",
+          "axis": "z"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "face"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "x"
+          },
+          {
+            "id": "scaled",
+            "op": "map-range",
+            "inputMinimum": -380,
+            "inputMaximum": 380,
+            "outputMinimum": -8,
+            "outputMaximum": 8
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 120,
+            "damping": 16
+          }
+        ]
+      },
+      {
+        "id": "face.follow-x",
+        "name": "face follows the cursor (x)",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "face",
+          "property": "position",
+          "axis": "x"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "face"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "x"
+          },
+          {
+            "id": "scaled",
+            "op": "map-range",
+            "inputMinimum": -400,
+            "inputMaximum": 400,
+            "outputMinimum": -30,
+            "outputMaximum": 30
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 130,
+            "damping": 18
+          }
+        ]
+      },
+      {
+        "id": "face.follow-y",
+        "name": "face follows the cursor (y)",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "face",
+          "property": "position",
+          "axis": "y"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "face"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "y"
+          },
+          {
+            "id": "scaled",
+            "op": "map-range",
+            "inputMinimum": -400,
+            "inputMaximum": 400,
+            "outputMinimum": -17,
+            "outputMaximum": 17
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 130,
+            "damping": 18
+          }
+        ]
+      },
+      {
+        "id": "pupil-left.follow-x",
+        "name": "pupil-left follows the cursor (x)",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "pupil-left",
+          "property": "position",
+          "axis": "x"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "pupil-left"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "x"
+          },
+          {
+            "id": "scaled",
+            "op": "map-range",
+            "inputMinimum": -340,
+            "inputMaximum": 340,
+            "outputMinimum": -13,
+            "outputMaximum": 13
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 260,
+            "damping": 24
+          }
+        ]
+      },
+      {
+        "id": "pupil-left.follow-y",
+        "name": "pupil-left follows the cursor (y)",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "pupil-left",
+          "property": "position",
+          "axis": "y"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "pupil-left"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "y"
+          },
+          {
+            "id": "scaled",
+            "op": "map-range",
+            "inputMinimum": -340,
+            "inputMaximum": 340,
+            "outputMinimum": -13,
+            "outputMaximum": 13
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 260,
+            "damping": 24
+          }
+        ]
+      },
+      {
+        "id": "pupil-right.follow-x",
+        "name": "pupil-right follows the cursor (x)",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "pupil-right",
+          "property": "position",
+          "axis": "x"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "pupil-right"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "x"
+          },
+          {
+            "id": "scaled",
+            "op": "map-range",
+            "inputMinimum": -340,
+            "inputMaximum": 340,
+            "outputMinimum": -13,
+            "outputMaximum": 13
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 260,
+            "damping": 24
+          }
+        ]
+      },
+      {
+        "id": "pupil-right.follow-y",
+        "name": "pupil-right follows the cursor (y)",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "pupil-right",
+          "property": "position",
+          "axis": "y"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "pupil-right"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "y"
+          },
+          {
+            "id": "scaled",
+            "op": "map-range",
+            "inputMinimum": -340,
+            "inputMaximum": 340,
+            "outputMinimum": -13,
+            "outputMaximum": 13
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 260,
+            "damping": 24
+          }
+        ]
+      },
+      {
+        "id": "lean-x",
+        "name": "The body leans toward the cursor (x)",
+        "target": {
+          "kind": "effect-parameter",
+          "nodeId": "water",
+          "parameterId": "lean",
+          "axis": "x"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "face"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "x"
+          },
+          {
+            "id": "travel",
+            "op": "map-range",
+            "inputMinimum": -400,
+            "inputMaximum": 400,
+            "outputMinimum": -20,
+            "outputMaximum": 20,
+            "clamp": true
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 110,
+            "damping": 17
+          }
+        ]
+      },
+      {
+        "id": "lean-y",
+        "name": "The body leans toward the cursor (y)",
+        "target": {
+          "kind": "effect-parameter",
+          "nodeId": "water",
+          "parameterId": "lean",
+          "axis": "y"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "face"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "y"
+          },
+          {
+            "id": "travel",
+            "op": "map-range",
+            "inputMinimum": -400,
+            "inputMaximum": 400,
+            "outputMinimum": -12,
+            "outputMaximum": 12,
+            "clamp": true
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 110,
+            "damping": 17
+          }
+        ]
+      },
+      {
+        "id": "water.focus-x",
+        "name": "water focus follows the cursor (x)",
+        "target": {
+          "kind": "effect-parameter",
+          "nodeId": "water",
+          "parameterId": "charge",
+          "axis": "x"
+        },
+        "blend": "set",
+        "steps": [
+          {
+            "id": "pointer",
+            "op": "pointer"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "x"
+          },
+          {
+            "id": "lag",
+            "op": "damp",
+            "halfLife": 0.07
+          }
+        ]
+      },
+      {
+        "id": "water.focus-y",
+        "name": "water focus follows the cursor (y)",
+        "target": {
+          "kind": "effect-parameter",
+          "nodeId": "water",
+          "parameterId": "charge",
+          "axis": "y"
+        },
+        "blend": "set",
+        "steps": [
+          {
+            "id": "pointer",
+            "op": "pointer"
+          },
+          {
+            "id": "component",
+            "op": "axis",
+            "axis": "y"
+          },
+          {
+            "id": "lag",
+            "op": "damp",
+            "halfLife": 0.07
+          }
+        ]
+      },
+      {
+        "id": "agitation",
+        "name": "Proximity, presses and the charge input excite the surface",
+        "target": {
+          "kind": "effect-parameter",
+          "nodeId": "water",
+          "parameterId": "agitation"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "inside",
+            "op": "pointer-state",
+            "field": "inside"
+          },
+          {
+            "id": "pressed",
+            "op": "pointer-over",
+            "hitAreaId": "creature",
+            "field": "pressed",
+            "inputs": []
+          },
+          {
+            "id": "forced",
+            "op": "input",
+            "input": "charge",
+            "inputs": []
+          },
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "face",
+            "inputs": []
+          },
+          {
+            "id": "distance",
+            "op": "length",
+            "inputs": [
+              "toward"
+            ]
+          },
+          {
+            "id": "near",
+            "op": "map-range",
+            "inputs": [
+              "distance"
+            ],
+            "inputMinimum": 70,
+            "inputMaximum": 430,
+            "outputMinimum": 1,
+            "outputMaximum": 0,
+            "clamp": true
+          },
+          {
+            "id": "calm",
+            "op": "constant",
+            "value": 0,
+            "inputs": []
+          },
+          {
+            "id": "full",
+            "op": "constant",
+            "value": 1,
+            "inputs": []
+          },
+          {
+            "id": "gated",
+            "op": "select",
+            "inputs": [
+              "inside",
+              "near",
+              "calm"
+            ]
+          },
+          {
+            "id": "orForced",
+            "op": "arithmetic",
+            "operation": "maximum",
+            "inputs": [
+              "gated",
+              "forced"
+            ]
+          },
+          {
+            "id": "orPressed",
+            "op": "select",
+            "inputs": [
+              "pressed",
+              "full",
+              "orForced"
+            ]
+          },
+          {
+            "id": "scaled",
+            "op": "arithmetic",
+            "operation": "multiply",
+            "operand": 0.68,
+            "inputs": [
+              "orPressed"
+            ]
+          },
+          {
+            "id": "eased",
+            "op": "damp",
+            "halfLife": 0.11,
+            "inputs": [
+              "scaled"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "wobble-gain",
+        "name": "Proximity, presses and the charge input excite the surface",
+        "target": {
+          "kind": "effect-parameter",
+          "nodeId": "water",
+          "parameterId": "wobble"
+        },
+        "blend": "add",
+        "steps": [
+          {
+            "id": "inside",
+            "op": "pointer-state",
+            "field": "inside"
+          },
+          {
+            "id": "pressed",
+            "op": "pointer-over",
+            "hitAreaId": "creature",
+            "field": "pressed",
+            "inputs": []
+          },
+          {
+            "id": "forced",
+            "op": "input",
+            "input": "charge",
+            "inputs": []
+          },
+          {
+            "id": "toward",
+            "op": "node-vector",
+            "nodeId": "face",
+            "inputs": []
+          },
+          {
+            "id": "distance",
+            "op": "length",
+            "inputs": [
+              "toward"
+            ]
+          },
+          {
+            "id": "near",
+            "op": "map-range",
+            "inputs": [
+              "distance"
+            ],
+            "inputMinimum": 70,
+            "inputMaximum": 430,
+            "outputMinimum": 1,
+            "outputMaximum": 0,
+            "clamp": true
+          },
+          {
+            "id": "calm",
+            "op": "constant",
+            "value": 0,
+            "inputs": []
+          },
+          {
+            "id": "full",
+            "op": "constant",
+            "value": 1,
+            "inputs": []
+          },
+          {
+            "id": "gated",
+            "op": "select",
+            "inputs": [
+              "inside",
+              "near",
+              "calm"
+            ]
+          },
+          {
+            "id": "orForced",
+            "op": "arithmetic",
+            "operation": "maximum",
+            "inputs": [
+              "gated",
+              "forced"
+            ]
+          },
+          {
+            "id": "orPressed",
+            "op": "select",
+            "inputs": [
+              "pressed",
+              "full",
+              "orForced"
+            ]
+          },
+          {
+            "id": "scaled",
+            "op": "arithmetic",
+            "operation": "multiply",
+            "operand": 8,
+            "inputs": [
+              "orPressed"
+            ]
+          },
+          {
+            "id": "eased",
+            "op": "damp",
+            "halfLife": 0.11,
+            "inputs": [
+              "scaled"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "face.press-squash",
+        "name": "face squashes while held",
+        "target": {
+          "kind": "node-property",
+          "nodeId": "face",
+          "property": "scale"
+        },
+        "blend": "multiply",
+        "steps": [
+          {
+            "id": "pressed",
+            "op": "pointer-over",
+            "hitAreaId": "creature",
+            "field": "pressed"
+          },
+          {
+            "id": "down",
+            "op": "constant",
+            "value": 0.95
+          },
+          {
+            "id": "rest",
+            "op": "constant",
+            "value": 1
+          },
+          {
+            "id": "goal",
+            "op": "select",
+            "inputs": [
+              "pressed",
+              "down",
+              "rest"
+            ]
+          },
+          {
+            "id": "eased",
+            "op": "spring",
+            "stiffness": 480,
+            "damping": 26
+          }
+        ]
+      }
+    ]
+  },
+  "capabilities": {
+    "required": [
+      "interaction"
+    ],
+    "optional": [],
+    "unsupportedPolicy": "warn"
+  }
+}

@@ -1,0 +1,4 @@
+.build/
+.reference/
+ClayzoEngineCore.xcframework/
+dist/

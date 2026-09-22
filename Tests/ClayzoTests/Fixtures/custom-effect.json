@@ -1,0 +1,587 @@
+{
+  "version": 2,
+  "id": "custom-effect",
+  "revision": "sha256:custom-effect",
+  "name": "Custom SkSL effect",
+  "canvas": {
+    "width": 900,
+    "height": 600,
+    "pixelAspectRatio": 1,
+    "backgroundColor": {
+      "r": 0.05,
+      "g": 0.06,
+      "b": 0.08,
+      "a": 1
+    }
+  },
+  "timing": {
+    "ticksPerSecond": 240,
+    "frameRate": {
+      "numerator": 30,
+      "denominator": 1
+    },
+    "durationTicks": 600,
+    "displayStartTick": 0
+  },
+  "assets": {},
+  "compositions": {
+    "main": {
+      "id": "main",
+      "name": "main",
+      "width": 900,
+      "height": 600,
+      "durationTicks": 600,
+      "nodes": {
+        "blob-0": {
+          "id": "blob-0",
+          "name": "blob-0",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 600,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 300,
+                "y": 300,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 300,
+              "height": 246
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.98,
+                  "g": 0.3,
+                  "b": 0.22,
+                  "a": 1
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "blob-1": {
+          "id": "blob-1",
+          "name": "blob-1",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 600,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 470,
+                "y": 250,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 240,
+              "height": 197
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.22,
+                  "g": 0.85,
+                  "b": 0.95,
+                  "a": 1
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "blob-2": {
+          "id": "blob-2",
+          "name": "blob-2",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 600,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 400,
+                "y": 420,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 270,
+              "height": 221
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.96,
+                  "g": 0.85,
+                  "b": 0.25,
+                  "a": 1
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "blob-3": {
+          "id": "blob-3",
+          "name": "blob-3",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 600,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 620,
+                "y": 380,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "ellipse",
+          "size": {
+            "kind": "constant",
+            "value": {
+              "width": 200,
+              "height": 164
+            }
+          },
+          "style": {
+            "fill": {
+              "color": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.55,
+                  "g": 0.35,
+                  "b": 0.95,
+                  "a": 1
+                }
+              },
+              "opacity": {
+                "kind": "constant",
+                "value": 1
+              }
+            }
+          }
+        },
+        "art": {
+          "id": "art",
+          "name": "art",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 600,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "group",
+          "children": [
+            "blob-0",
+            "blob-1",
+            "blob-2",
+            "blob-3"
+          ]
+        },
+        "fx": {
+          "id": "fx",
+          "name": "Chromatic ripple",
+          "visible": true,
+          "inTick": 0,
+          "outTick": 600,
+          "opacity": {
+            "kind": "constant",
+            "value": 1
+          },
+          "transform": {
+            "position": {
+              "kind": "constant",
+              "value": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0
+              }
+            },
+            "anchor": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "scale": {
+              "kind": "constant",
+              "value": {
+                "x": 1,
+                "y": 1,
+                "z": 1
+              }
+            },
+            "rotation": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "skew": {
+              "kind": "constant",
+              "value": {
+                "x": 0,
+                "y": 0
+              }
+            }
+          },
+          "blendMode": "normal",
+          "type": "effect",
+          "inputId": "art",
+          "effect": "custom-sksl",
+          "implementation": "uniform shader inputImage;\nuniform float2 center;\nuniform float amplitude;\nuniform float frequency;\nuniform half4 tint;\nuniform float glowMix;\nuniform float invert;   // a boolean parameter arrives as 0.0 or 1.0\n\n// A helper declared outside main. The translator has to keep the prelude and\n// rewrite the eval calls inside it, not just the ones in main.\nhalf3 aberrate(float2 p, float spread) {\n  half r = unpremul(inputImage.eval(p + float2(spread, 0.0))).r;\n  half g = unpremul(inputImage.eval(p)).g;\n  half b = unpremul(inputImage.eval(p - float2(spread, 0.0))).b;\n  return half3(r, g, b);\n}\n\nhalf4 main(float2 p) {\n  // Named `sample` deliberately: legal in SkSL, reserved in GLSL ES 3.00.\n  half4 sample = inputImage.eval(p);\n  float alpha = float(sample.a);\n  float2 delta = p - center;\n  float dist = length(delta);\n  float2 direction = delta / max(dist, 0.0001);\n\n  float wave = sin(dist * frequency - amplitude * 6.2831853);\n\n  // A half-precision matrix. `half` is only a precision hint, so this reduces\n  // to a plain mat2 on the way to GLSL.\n  half angle = half(wave * 0.35);\n  half2x2 swirl = half2x2(cos(angle), -sin(angle), sin(angle), cos(angle));\n  float2 turned = float2(swirl * half2(direction));\n  float2 rippled = p + turned * wave * amplitude * 12.0;\n\n  half3 base = aberrate(rippled, wave * 3.0);\n\n  // A bounded loop accumulating a ring of taps.\n  half3 glow = half3(0.0);\n  for (int i = 0; i < 6; i++) {\n    float angle = float(i) * 1.0471976;\n    glow += unpremul(inputImage.eval(rippled + float2(cos(angle), sin(angle)) * 5.0)).rgb;\n  }\n  glow = glow / 6.0;\n\n  half3 lit = mix(base, glow, saturate(glowMix));\n  half3 toned = mix(lit, tint.rgb, saturate(tint.a) * 0.4);\n  // The boolean arrives as a float, so branch on it the way SkSL requires.\n  half3 finalRgb = invert > 0.5 ? half3(1.0) - toned : toned;\n  return half4(saturate(finalRgb) * alpha, alpha);\n}\n",
+          "parameters": [
+            {
+              "id": "center",
+              "name": "center",
+              "valueType": "point",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "x": 430,
+                  "y": 330
+                }
+              },
+              "minimum": {
+                "x": 0,
+                "y": 0
+              },
+              "maximum": {
+                "x": 900,
+                "y": 600
+              }
+            },
+            {
+              "id": "amplitude",
+              "name": "amplitude",
+              "valueType": "number",
+              "value": {
+                "kind": "keyframed",
+                "keyframes": [
+                  {
+                    "id": "a0",
+                    "tick": 0,
+                    "value": 0.15,
+                    "interpolation": "linear"
+                  },
+                  {
+                    "id": "a1",
+                    "tick": 300,
+                    "value": 0.85,
+                    "interpolation": "linear"
+                  },
+                  {
+                    "id": "a2",
+                    "tick": 599,
+                    "value": 0.15,
+                    "interpolation": "linear"
+                  }
+                ]
+              },
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "id": "frequency",
+              "name": "frequency",
+              "valueType": "number",
+              "value": {
+                "kind": "constant",
+                "value": 0.075
+              },
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "id": "tint",
+              "name": "tint",
+              "valueType": "color",
+              "value": {
+                "kind": "constant",
+                "value": {
+                  "r": 0.3,
+                  "g": 0.95,
+                  "b": 0.8,
+                  "a": 0.65
+                }
+              }
+            },
+            {
+              "id": "glowMix",
+              "name": "glowMix",
+              "valueType": "number",
+              "value": {
+                "kind": "constant",
+                "value": 0.3
+              },
+              "minimum": 0,
+              "maximum": 1
+            },
+            {
+              "id": "invert",
+              "name": "invert",
+              "valueType": "boolean",
+              "value": {
+                "kind": "constant",
+                "value": false
+              }
+            }
+          ],
+          "capability": {
+            "requires": [
+              "runtime-effect",
+              "offscreen-surface"
+            ],
+            "fallback": "error",
+            "maxTemporarySurfaces": 2
+          }
+        }
+      },
+      "rootNodeIds": [
+        "fx"
+      ]
+    }
+  },
+  "rootCompositionId": "main",
+  "components": {},
+  "markers": [],
+  "capabilities": {
+    "required": [
+      "runtime-effect"
+    ],
+    "optional": [
+      "offscreen-surface"
+    ],
+    "unsupportedPolicy": "error"
+  }
+}
