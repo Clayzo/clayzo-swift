@@ -88,15 +88,50 @@ static float roundedRectDistance(float2 point, float2 half_, float radius) {
   return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius;
 }
 
+/// The ellipse's implicit function divided by its gradient: a distance on the
+/// curve and to first order near it. Scaling |p/r| - 1 by the smaller radius
+/// is a distance only on a circle; on an eccentric ellipse a stroke's band
+/// came out wider at the ends of the long axis.
+static float ellipseDistance(float2 point, float2 radii) {
+  float2 r = max(radii, float2(1e-6));
+  float k = length(point / r);
+  float g = length(point / (r * r));
+  return g > 1e-12 ? k * (k - 1.0) / g : -min(r.x, r.y);
+}
+
+static float shapeDistance(constant Paint &p, float2 point) {
+  return p.shape == 1 ? ellipseDistance(point, p.box.zw) : roundedRectDistance(point, p.box.zw, p.radius);
+}
+
+/// One pixel's worth of distance across the nearest edge. Not fwidth(dist):
+/// screen derivatives are differences within a 2x2 block of pixels, and
+/// across a stroke's centre line — or a thin rectangle's middle — the field
+/// folds, so the difference collapses and the edge went hard or soft
+/// depending on which way the blocks fell. The local position is affine, so
+/// its derivatives are the same in every block.
+static float edgeWidth(constant Paint &p, float2 point, float2 local) {
+  float2 normal;
+  if (p.shape == 1) {
+    float2 r = max(p.box.zw, float2(1e-6));
+    float2 g = point / (r * r);
+    float len = length(g);
+    normal = len > 1e-12 ? g / len : float2(1.0, 0.0);
+  } else {
+    float2 q = abs(point) - p.box.zw + p.radius;
+    float2 side = float2(point.x < 0.0 ? -1.0 : 1.0, point.y < 0.0 ? -1.0 : 1.0);
+    if (q.x > 0.0 && q.y > 0.0) normal = normalize(q) * side;
+    else normal = q.x > q.y ? float2(side.x, 0.0) : float2(0.0, side.y);
+  }
+  return abs(dot(normal, dfdx(local))) + abs(dot(normal, dfdy(local)));
+}
+
 /// Analytic coverage for the primitives whose distance function is closed-form.
 fragment float4 shapeFragment(Varyings in [[stage_in]], constant Paint &p [[buffer(0)]]) {
   float2 point = in.local - p.box.xy;
-  float dist = p.shape == 1
-    ? (length(point / max(p.box.zw, float2(1e-6))) - 1.0) * min(p.box.z, p.box.w)
-    : roundedRectDistance(point, p.box.zw, p.radius);
+  float dist = shapeDistance(p, point);
   // A stroke is the same field read as a band around zero.
   if (p.stroke > 0.0) dist = abs(dist) - p.stroke * 0.5;
-  float width = fwidth(dist);
+  float width = edgeWidth(p, point, in.local);
   float coverage = 1.0 - smoothstep(-width * 0.5, width * 0.5, dist);
   if (coverage <= 0.0) discard_fragment();
   float4 color = paintColor(p, in.local);
@@ -116,10 +151,8 @@ struct MaskedFragment {
 
 fragment MaskedFragment shapeMaskFragment(Varyings in [[stage_in]], constant Paint &p [[buffer(0)]]) {
   float2 point = in.local - p.box.xy;
-  float dist = p.shape == 1
-    ? (length(point / max(p.box.zw, float2(1e-6))) - 1.0) * min(p.box.z, p.box.w)
-    : roundedRectDistance(point, p.box.zw, p.radius);
-  float width = fwidth(dist);
+  float dist = shapeDistance(p, point);
+  float width = edgeWidth(p, point, in.local);
   float coverage = 1.0 - smoothstep(-width * 0.5, width * 0.5, dist);
   if (coverage <= 0.0) discard_fragment();
   uint samples = uint(clamp(coverage * 4.0 + 0.5, 0.0, 4.0));

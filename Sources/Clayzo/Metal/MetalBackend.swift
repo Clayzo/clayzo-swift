@@ -23,16 +23,25 @@ public enum MetalBackendError: Error {
 }
 
 /*
- * Stencil budget, shared with the WebGL backend: four low bits carry a path's
- * winding number and the four high bits are one-per-nesting-level clip
- * flags, so a clip inside a clip intersects rather than replaces. Clip bits
- * sit strictly above the winding bits so that one `less` comparison over
- * the combined mask means "inside every clip AND wound non-zero".
+ * Stencil budget, shared with the WebGL backend: the low nibble is one
+ * path's scratch — three bits of winding count and a mark — and the high
+ * nibble is the clip level, a count of the open clips enclosing the sample,
+ * so clips nest fifteen deep. Nothing is ever above the current depth, so
+ * "inside every open clip" is one `equal` on the level, and the level sits
+ * above the scratch bits, so `less` with reference depth << 4 over both
+ * nibbles means "inside every clip AND wound non-zero".
+ *
+ * A clip marks what its shapes cover at the current level; at its end one
+ * quad over their bounds turns the marks into the next level, and restoring
+ * its group turns them back — each an `invert` under a write mask of the
+ * bits in which the two levels differ.
  */
 private let windingMask: UInt32 = 0x0f
 private let fillBits: UInt32 = 0x07
 private let boldBit: UInt32 = 0x08
-private let clipBits: [UInt32] = [0x10, 0x20, 0x40, 0x80]
+private let levelMask: UInt32 = 0xf0
+private let maxClipDepth = 15
+private func level(_ depth: Int) -> UInt32 { UInt32(depth) << 4 }
 
 /// Past this sigma a blur runs on a downsampled copy of its input, as Skia's
 /// GPU blur does.
@@ -184,6 +193,8 @@ public final class MetalBackend {
   struct StencilKey: Hashable {
     let compare: MTLCompareFunction
     let pass: MTLStencilOperation
+    /// What back faces do on pass; the same as `pass` except for winding.
+    let backPass: MTLStencilOperation
     let readMask: UInt32
     let writeMask: UInt32
   }
@@ -229,19 +240,23 @@ public final class MetalBackend {
     return state
   }
 
-  func stencilState(compare: MTLCompareFunction, pass: MTLStencilOperation, readMask: UInt32, writeMask: UInt32) -> MTLDepthStencilState {
-    let key = StencilKey(compare: compare, pass: pass, readMask: readMask, writeMask: writeMask)
+  func stencilState(compare: MTLCompareFunction, pass: MTLStencilOperation, backPass: MTLStencilOperation? = nil, readMask: UInt32, writeMask: UInt32) -> MTLDepthStencilState {
+    let back = backPass ?? pass
+    let key = StencilKey(compare: compare, pass: pass, backPass: back, readMask: readMask, writeMask: writeMask)
     if let state = stencilStates[key] { return state }
-    let stencil = MTLStencilDescriptor()
-    stencil.stencilCompareFunction = compare
-    stencil.stencilFailureOperation = .keep
-    stencil.depthFailureOperation = .keep
-    stencil.depthStencilPassOperation = pass
-    stencil.readMask = readMask
-    stencil.writeMask = writeMask
+    func face(_ operation: MTLStencilOperation) -> MTLStencilDescriptor {
+      let stencil = MTLStencilDescriptor()
+      stencil.stencilCompareFunction = compare
+      stencil.stencilFailureOperation = .keep
+      stencil.depthFailureOperation = .keep
+      stencil.depthStencilPassOperation = operation
+      stencil.readMask = readMask
+      stencil.writeMask = writeMask
+      return stencil
+    }
     let descriptor = MTLDepthStencilDescriptor()
-    descriptor.frontFaceStencil = stencil
-    descriptor.backFaceStencil = stencil
+    descriptor.frontFaceStencil = face(pass)
+    descriptor.backFaceStencil = face(back)
     descriptor.isDepthWriteEnabled = false
     descriptor.depthCompareFunction = .always
     let state = device.makeDepthStencilState(descriptor: descriptor)!
@@ -407,11 +422,15 @@ final class FrameRenderer {
   var encoder: MTLRenderCommandEncoder?
   var current: Target!
   var matrix = Affine.identity
-  var clipMask: UInt32 = 0
+  /// Clips open on the current target: the stencil level inside all of them.
   var clipDepth = 0
+  /// What each open clip covers, in composition units, outermost first.
+  var clipBoxes: [Box] = []
   var buildingClip = false
-  var buildingClipBit: UInt32 = 0
-  var scopeStack: [(Affine, UInt32, Int)] = []
+  /// The clip being built is past the deepest level, and dropped.
+  var clipOverflow = false
+  var buildBox = Box()
+  var scopeStack: [(Affine, Int)] = []
 
   var fillColor = SIMD4<Float>(0, 0, 0, 1)
   var strokeColor: SIMD4<Float>?
@@ -549,22 +568,55 @@ final class FrameRenderer {
     return true
   }
 
-  func setStencil(_ encoder: MTLRenderCommandEncoder, compare: MTLCompareFunction, pass: MTLStencilOperation, reference: UInt32, readMask: UInt32, writeMask: UInt32) {
-    encoder.setDepthStencilState(backend.stencilState(compare: compare, pass: pass, readMask: readMask, writeMask: writeMask))
+  func setStencil(_ encoder: MTLRenderCommandEncoder, compare: MTLCompareFunction, pass: MTLStencilOperation, backPass: MTLStencilOperation? = nil, reference: UInt32, readMask: UInt32, writeMask: UInt32) {
+    encoder.setDepthStencilState(backend.stencilState(compare: compare, pass: pass, backPass: backPass, readMask: readMask, writeMask: writeMask))
     encoder.setStencilReferenceValue(reference)
+  }
+
+  /// Nonzero winding into the low bits: front faces count up, back faces
+  /// down, wrapping within `fillBits`. Nonzero because the reference fills
+  /// that way and fonts are drawn that way; `.invert` was even-odd and left
+  /// holes wherever two contours of one glyph overlap. Cull mode stays none.
+  func setWindingStencil(_ encoder: MTLRenderCommandEncoder, compare: MTLCompareFunction, reference: UInt32, readMask: UInt32) {
+    setStencil(encoder, compare: compare, pass: .incrementWrap, backPass: .decrementWrap, reference: reference, readMask: readMask, writeMask: fillBits)
   }
 
   /// Stencil state for an ordinary colour draw under the current state.
   func applyDrawStencil(_ encoder: MTLRenderCommandEncoder) {
-    if buildingClip && buildingClipBit != 0 {
-      // Write this clip's bit, but only where every enclosing clip already
-      // passes — that intersection is the whole point of the nesting.
-      setStencil(encoder, compare: .equal, pass: .replace, reference: clipMask | buildingClipBit, readMask: clipMask, writeMask: buildingClipBit)
-    } else if clipMask != 0 {
-      setStencil(encoder, compare: .equal, pass: .keep, reference: clipMask, readMask: clipMask, writeMask: 0)
+    if buildingClip && !clipOverflow {
+      // Mark what the shape covers, but only where every enclosing clip
+      // already passes — that intersection is the whole point of nesting.
+      setStencil(encoder, compare: .equal, pass: .replace, reference: level(clipDepth) | boldBit, readMask: levelMask, writeMask: boldBit)
+    } else if clipDepth != 0 {
+      setStencil(encoder, compare: .equal, pass: .keep, reference: level(clipDepth), readMask: levelMask, writeMask: 0)
     } else {
       setStencil(encoder, compare: .always, pass: .keep, reference: 0, readMask: 0, writeMask: 0)
     }
+  }
+
+  /// Grows the clip being built by a quad in local units, under the current transform.
+  func addClipBounds(_ x0: Double, _ y0: Double, _ x1: Double, _ y1: Double) {
+    for (x, y) in [(x0, y0), (x1, y0), (x0, y1), (x1, y1)] {
+      let (X, Y) = matrix.apply(x, y)
+      buildBox.add(X, Y)
+    }
+  }
+
+  /// Turns the stencil value `from` into `to` inside `box` (composition units)
+  /// where `gate` matches `from`: an `invert` under a write mask of the bits
+  /// that differ. Colour writes are off.
+  func turnLevel(_ encoder: MTLRenderCommandEncoder, from: UInt32, to: UInt32, gate: UInt32, box: Box) {
+    guard box.minX <= box.maxX && box.minY <= box.maxY else { return }
+    setStencil(encoder, compare: .equal, pass: .invert, reference: from, readMask: gate, writeMask: from ^ to)
+    guard usePipeline(encoder, fragment: "solidFragment", blend: .over, writeColor: false) else { return }
+    setVertexUniforms(encoder, matrix: .identity, target: current)
+    var blank = Paint()
+    encoder.setFragmentBytes(&blank, length: MemoryLayout<Paint>.stride, index: 0)
+    // A device pixel of slack: samples outside the clip fail the gate anyway.
+    let pad = 1 / min(scale.x, scale.y)
+    var padded = box
+    padded.minX -= pad; padded.minY -= pad; padded.maxX += pad; padded.maxY += pad
+    drawTriangles(encoder, coverQuad(padded))
   }
 
   /// A rect's two triangles in composition units.
@@ -592,7 +644,10 @@ final class FrameRenderer {
 
   /* -------------------- primitives -------------------- */
 
-  func drawAnalytic(_ encoder: MTLRenderCommandEncoder, shape: Int32, cx: Double, cy: Double, hx: Double, hy: Double, radius: Double, color: SIMD4<Float>, stroke: Double = 0) {
+  /// `solid` for strokes: a stroke is its own colour in the reference, but
+  /// `paintMode` is only reset by the next fill style, so a stroke after any
+  /// gradient shape was painted with the gradient.
+  func drawAnalytic(_ encoder: MTLRenderCommandEncoder, shape: Int32, cx: Double, cy: Double, hx: Double, hy: Double, radius: Double, color: SIMD4<Float>, stroke: Double = 0, solid: Bool = false) {
     applyDrawStencil(encoder)
     // A clip on a multisampled target spends the coverage on the sample mask.
     let fragment = buildingClip && current.samples > 1 ? "shapeMaskFragment" : "shapeFragment"
@@ -603,16 +658,17 @@ final class FrameRenderer {
     p.box = SIMD4(Float(cx), Float(cy), Float(hx), Float(hy))
     p.radius = Float(min(radius, min(hx, hy)))
     p.stroke = Float(stroke)
-    if buildingClip { p.paint = 0 }
+    if buildingClip || solid { p.paint = 0 }
     encoder.setFragmentBytes(&p, length: MemoryLayout<Paint>.stride, index: 0)
     // Room for the coverage ramp plus half the stroke.
     let margin = 2 / matrix.scale + stroke * 0.5 + 1
     let l = Float(cx - hx - margin), t = Float(cy - hy - margin), r = Float(cx + hx + margin), b = Float(cy + hy + margin)
     drawTriangles(encoder, [l, t, r, t, l, b, r, t, r, b, l, b])
+    if buildingClip { addClipBounds(cx - hx - margin, cy - hy - margin, cx + hx + margin, cy + hy + margin) }
     stats.primitives += 1
   }
 
-  /// Winding fans for a set of contours, inverting the low stencil bits.
+  /// Winding fans for a set of contours, counted into the low stencil bits.
   func windContours(_ encoder: MTLRenderCommandEncoder, _ contours: [[Float]]) -> Box? {
     var box = Box()
     var fan: [Float] = []
@@ -646,8 +702,8 @@ final class FrameRenderer {
   /// Winding into the low bits, cover where non-zero — and, when a clip is
   /// active, only where every clip bit is set too.
   func stencilThenCover(_ encoder: MTLRenderCommandEncoder, contours: [[Float]], color: SIMD4<Float>, boldWidth: Double, closed: [Bool]) {
-    if clipMask != 0 { setStencil(encoder, compare: .equal, pass: .invert, reference: clipMask, readMask: clipMask, writeMask: fillBits) }
-    else { setStencil(encoder, compare: .always, pass: .invert, reference: 0, readMask: fillBits, writeMask: fillBits) }
+    if clipDepth != 0 { setWindingStencil(encoder, compare: .equal, reference: level(clipDepth), readMask: levelMask) }
+    else { setWindingStencil(encoder, compare: .always, reference: 0, readMask: fillBits) }
     var bounds = windContours(encoder, contours)
 
     if boldWidth > 0 {
@@ -658,7 +714,7 @@ final class FrameRenderer {
         strokePolyline(contour, closed: index < closed.count ? closed[index] : true, half: boldWidth / 2, cap: 0, join: 0, miterLimit: 4, into: &triangles)
       }
       if !triangles.isEmpty {
-        if clipMask != 0 { setStencil(encoder, compare: .equal, pass: .replace, reference: clipMask | boldBit, readMask: clipMask, writeMask: boldBit) }
+        if clipDepth != 0 { setStencil(encoder, compare: .equal, pass: .replace, reference: level(clipDepth) | boldBit, readMask: levelMask, writeMask: boldBit) }
         else { setStencil(encoder, compare: .always, pass: .replace, reference: boldBit, readMask: boldBit, writeMask: boldBit) }
         drawTriangles(encoder, triangles)
         var i = 0
@@ -670,7 +726,7 @@ final class FrameRenderer {
     }
     guard let box = bounds else { return }
 
-    if clipMask != 0 { setStencil(encoder, compare: .less, pass: .zero, reference: clipMask, readMask: clipMask | windingMask, writeMask: windingMask) }
+    if clipDepth != 0 { setStencil(encoder, compare: .less, pass: .zero, reference: level(clipDepth), readMask: levelMask | windingMask, writeMask: windingMask) }
     else { setStencil(encoder, compare: .notEqual, pass: .zero, reference: 0, readMask: windingMask, writeMask: windingMask) }
     guard usePipeline(encoder, fragment: "solidFragment", blend: .over) else { return }
     var p = currentPaint(color: color)
@@ -701,7 +757,7 @@ final class FrameRenderer {
     }
 
     // REPLACE, not INVERT: overlapping pieces must union.
-    if clipMask != 0 { setStencil(encoder, compare: .equal, pass: .replace, reference: clipMask | 1, readMask: clipMask, writeMask: windingMask) }
+    if clipDepth != 0 { setStencil(encoder, compare: .equal, pass: .replace, reference: level(clipDepth) | 1, readMask: levelMask, writeMask: windingMask) }
     else { setStencil(encoder, compare: .always, pass: .replace, reference: 1, readMask: windingMask, writeMask: windingMask) }
     guard usePipeline(encoder, fragment: "solidFragment", blend: .over, writeColor: false) else { return }
     setVertexUniforms(encoder, matrix: matrix, target: current)
@@ -709,7 +765,7 @@ final class FrameRenderer {
     encoder.setFragmentBytes(&blank, length: MemoryLayout<Paint>.stride, index: 0)
     drawTriangles(encoder, triangles)
 
-    if clipMask != 0 { setStencil(encoder, compare: .less, pass: .zero, reference: clipMask, readMask: clipMask | windingMask, writeMask: windingMask) }
+    if clipDepth != 0 { setStencil(encoder, compare: .less, pass: .zero, reference: level(clipDepth), readMask: levelMask | windingMask, writeMask: windingMask) }
     else { setStencil(encoder, compare: .notEqual, pass: .zero, reference: 0, readMask: windingMask, writeMask: windingMask) }
     guard usePipeline(encoder, fragment: "solidFragment", blend: .over) else { return }
     var p = currentPaint(color: color)
@@ -756,16 +812,16 @@ final class FrameRenderer {
     let target = makeTarget(rect: scope.rect, samples: scope.samples ? sampleCount : 1, storable: scope.children.contains { $0.usesBackdrop })
 
     // Save the parent's interpreter state; a scope starts from its own.
-    let saved = (encoder, current, matrix, clipMask, clipDepth, scopeStack)
+    let saved = (encoder, current, matrix, clipBoxes, clipDepth, scopeStack)
     current = target
     matrix = scope.entryMatrix
-    clipMask = 0
+    clipBoxes = []
     clipDepth = 0
     scopeStack = []
     beginPass(target, clear: MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0), storable: scope.children.contains { $0.usesBackdrop })
     interpret(from: scope.start, to: scope.end, children: scope.children)
     endPass()
-    (encoder, current, matrix, clipMask, clipDepth, scopeStack) = saved
+    (encoder, current, matrix, clipBoxes, clipDepth, scopeStack) = saved
 
     var result = Sampled(texture: target.result, rect: scope.rect, factor: 1)
     releaseTarget(target, keepResult: true)
@@ -955,12 +1011,22 @@ final class FrameRenderer {
       let opcode = next(&cursor)
       switch opcode {
       case Op.save:
-        scopeStack.append((matrix, clipMask, clipDepth))
+        scopeStack.append((matrix, clipDepth))
       case Op.restore:
         let popped = scopeStack.popLast()
         matrix = popped?.0 ?? .identity
-        clipMask = popped?.1 ?? 0
-        clipDepth = popped?.2 ?? 0
+        // A clip dies with its group: its level is turned back over what it
+        // covered, so nothing is left above the depth.
+        let outer = popped?.1 ?? 0
+        if clipDepth > outer {
+          var depth = clipDepth
+          while depth > outer {
+            turnLevel(encoder, from: level(depth), to: level(depth - 1), gate: levelMask, box: clipBoxes[depth - 1])
+            depth -= 1
+          }
+          clipBoxes.removeLast(clipDepth - outer)
+        }
+        clipDepth = outer
       case Op.transform:
         let a = next(&cursor), b = next(&cursor), c = next(&cursor), d = next(&cursor), e = next(&cursor), f = next(&cursor)
         matrix = matrix * Affine(a: a, b: b, c: c, d: d, e: e, f: f)
@@ -1007,13 +1073,13 @@ final class FrameRenderer {
         let flags = Int(next(&cursor))
         if buildingClip { drawAnalytic(encoder, shape: 0, cx: x + w / 2, cy: y + h / 2, hx: w / 2, hy: h / 2, radius: radius, color: SIMD4(1, 1, 1, 1)); break }
         if flags & 1 != 0 { drawAnalytic(encoder, shape: 0, cx: x + w / 2, cy: y + h / 2, hx: w / 2, hy: h / 2, radius: radius, color: fillColor) }
-        if flags & 2 != 0, let stroke = strokeColor { drawAnalytic(encoder, shape: 0, cx: x + w / 2, cy: y + h / 2, hx: w / 2, hy: h / 2, radius: radius, color: stroke, stroke: strokeWidth) }
+        if flags & 2 != 0, let stroke = strokeColor { drawAnalytic(encoder, shape: 0, cx: x + w / 2, cy: y + h / 2, hx: w / 2, hy: h / 2, radius: radius, color: stroke, stroke: strokeWidth, solid: true) }
       case Op.ellipse:
         let cx = next(&cursor), cy = next(&cursor), rx = next(&cursor), ry = next(&cursor)
         let flags = Int(next(&cursor))
         if buildingClip { drawAnalytic(encoder, shape: 1, cx: cx, cy: cy, hx: rx, hy: ry, radius: 0, color: SIMD4(1, 1, 1, 1)); break }
         if flags & 1 != 0 { drawAnalytic(encoder, shape: 1, cx: cx, cy: cy, hx: rx, hy: ry, radius: 0, color: fillColor) }
-        if flags & 2 != 0, let stroke = strokeColor { drawAnalytic(encoder, shape: 1, cx: cx, cy: cy, hx: rx, hy: ry, radius: 0, color: stroke, stroke: strokeWidth) }
+        if flags & 2 != 0, let stroke = strokeColor { drawAnalytic(encoder, shape: 1, cx: cx, cy: cy, hx: rx, hy: ry, radius: 0, color: stroke, stroke: strokeWidth, solid: true) }
       case Op.path:
         let contourCount = Int(next(&cursor))
         let flags = Int(next(&cursor))
@@ -1042,12 +1108,16 @@ final class FrameRenderer {
           contours.append(flat)
         }
         if buildingClip {
-          // A path clip: wind the low bits, then a cover pass whose REPLACE
-          // sets the clip bit and clears the winding in one write.
-          setStencil(encoder, compare: .always, pass: .invert, reference: 0, readMask: fillBits, writeMask: fillBits)
+          if clipOverflow { break }
+          // A path clip: wind the low bits where every enclosing clip passes,
+          // then a cover pass that marks where wound — `less` over level and
+          // winding passes exactly at the current level with a count — and
+          // zeroes the count in the same write.
+          setWindingStencil(encoder, compare: .equal, reference: level(clipDepth), readMask: levelMask)
           if let box = windContours(encoder, contours) {
-            setStencil(encoder, compare: .notEqual, pass: .replace, reference: clipMask | buildingClipBit, readMask: windingMask, writeMask: windingMask | buildingClipBit)
+            setStencil(encoder, compare: .less, pass: .replace, reference: level(clipDepth) | boldBit, readMask: levelMask | fillBits, writeMask: windingMask)
             drawTriangles(encoder, coverQuad(box))
+            addClipBounds(box.minX, box.minY, box.maxX, box.maxY)
           }
           break
         }
@@ -1074,6 +1144,7 @@ final class FrameRenderer {
           drawWidth = sourceWidth * s; drawHeight = sourceHeight * s
         }
         let x = -drawWidth / 2, y = -drawHeight / 2
+        if buildingClip { addClipBounds(x, y, x + drawWidth, y + drawHeight) }
         applyDrawStencil(encoder)
         guard usePipeline(encoder, fragment: "textureFragment", blend: .over) else { break }
         setVertexUniforms(encoder, matrix: matrix, target: current)
@@ -1086,30 +1157,21 @@ final class FrameRenderer {
         drawTriangles(encoder, [l, t, r, t, l, b, r, t, r, b, l, b])
         stats.primitives += 1
       case Op.clipBegin:
-        if clipDepth >= clipBits.count {
-          note("clip-depth-exceeded")
-          buildingClip = true
-          buildingClipBit = 0
-          break
-        }
         buildingClip = true
-        buildingClipBit = clipBits[clipDepth]
-        // Clear only this level's bit. Metal has no mid-pass clear, so a
-        // full-target quad zeroes it through the stencil unit.
-        setStencil(encoder, compare: .always, pass: .zero, reference: 0, readMask: 0, writeMask: buildingClipBit)
-        if usePipeline(encoder, fragment: "solidFragment", blend: .over, writeColor: false) {
-          setVertexUniforms(encoder, matrix: .identity, target: current)
-          var blank = Paint()
-          encoder.setFragmentBytes(&blank, length: MemoryLayout<Paint>.stride, index: 0)
-          drawTriangles(encoder, rectQuad(current.rect))
-        }
+        clipOverflow = clipDepth >= maxClipDepth
+        if clipOverflow { note("clip-depth-exceeded") }
+        buildBox = Box()
       case Op.clipEnd:
         buildingClip = false
-        if buildingClipBit != 0 {
-          clipMask |= buildingClipBit
+        if !clipOverflow {
+          // The marked samples become the next level, and the mark goes.
+          if buildBox.minX <= buildBox.maxX && buildBox.minY <= buildBox.maxY {
+            turnLevel(encoder, from: level(clipDepth) | boldBit, to: level(clipDepth + 1), gate: levelMask | boldBit, box: buildBox)
+          }
+          clipBoxes.append(buildBox)
           clipDepth += 1
         }
-        buildingClipBit = 0
+        clipOverflow = false
       case Op.skipped:
         cursor += 1
         note("skipped-node")
