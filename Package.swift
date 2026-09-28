@@ -10,7 +10,7 @@ let package = Package(
   ],
   targets: [
     // Built by scripts/build-xcframework.sh from packages/engine-core-rs.
-    .binaryTarget(name: "ClayzoEngineCore", url: "https://raw.githubusercontent.com/Clayzo/clayzo-swift/v0.3.7/ClayzoEngineCore.xcframework.zip", checksum: "1e1dc70f74b6ee3e427d8d9c62c56787ef77f224d96caf9064bc802c679dfd3d"),
+    .binaryTarget(name: "ClayzoEngineCore", url: "https://raw.githubusercontent.com/Clayzo/clayzo-swift/v0.3.8/ClayzoEngineCore.xcframework.zip", checksum: "d8537e4e2733c64726de7a41a46155d1f035656c6f65d953208e5c26ce0b39ee"),
     .target(name: "Clayzo", dependencies: ["ClayzoEngineCore"]),
     // Pixel harness against the CanvasKit reference; macOS only.
     .executableTarget(name: "ClayzoFidelity", dependencies: ["Clayzo"]),
