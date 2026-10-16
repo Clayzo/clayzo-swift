@@ -6,6 +6,6 @@ let package = Package(
   platforms: [.iOS(.v16), .macOS(.v13)],
   products: [.library(name: "Clayzo", targets: ["Clayzo"])],
   targets: [
-    .binaryTarget(name: "Clayzo", url: "https://raw.githubusercontent.com/Clayzo/clayzo-swift/v0.3.16/Clayzo.xcframework.zip", checksum: "47eca9ecd1009c95ecf6b990071422de4f4be3e86632c21b24e59855a95d3256"),
+    .binaryTarget(name: "Clayzo", url: "https://raw.githubusercontent.com/Clayzo/clayzo-swift/v0.3.17/Clayzo.xcframework.zip", checksum: "24d265c45f8b08fd87101489bcf488afc502f0146eb576d1d1c7ff93e913a512"),
   ]
 )
