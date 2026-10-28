@@ -14,7 +14,7 @@ In Xcode, choose File → Add Package Dependencies and enter
 `https://github.com/Clayzo/clayzo-swift`, or in a `Package.swift`:
 
 ```swift
-.package(url: "https://github.com/Clayzo/clayzo-swift.git", from: "0.3.19")
+.package(url: "https://github.com/Clayzo/clayzo-swift.git", from: "0.3.20")
 // target dependency: .product(name: "Clayzo", package: "clayzo-swift")
 ```
 
